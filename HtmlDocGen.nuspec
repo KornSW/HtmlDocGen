@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>HtmlDocGen</id>
-    <version>1.0.0-beta</version>
+    <version>0.8.0-beta</version>
     <title>HtmlDocGen</title>
     <authors>KornSW</authors>
     <owners>KornSW</owners>

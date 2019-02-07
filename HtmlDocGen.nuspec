@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>HtmlDocGen</id>
+    <version>1.0.0-beta</version>
+    <title>HtmlDocGen</title>
+    <authors>KornSW</authors>
+    <owners>KornSW</owners>
+    <!-- https://spdx.org/licenses/ -->
+    <license type="expression">GPL-3.0-only</license>
+    <projectUrl>https://github.com/KornSW/HtmlDocGen</projectUrl>
+    <!--<iconUrl>https://github.com/KornSW/HtmlDocGen/Master/kSystemExtensions.Logo.png</iconUrl>-->
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>HTML Document Generator</description>
+    <releaseNotes></releaseNotes>
+    <copyright>Copyright KornSW</copyright>
+    <tags>HTML Document Generator PDF wkhtmltopdf</tags>
+  </metadata>
+  <files>
+    
+    <!-- https://docs.microsoft.com/en-us/nuget/create-packages/creating-a-package#from-a-convention-based-working-directory -->
+    
+    <file src="HtmlDocGen\HtmlDocGen\bin\Release\HtmlDocGen.dll" target="lib/{tfm}" />
+    <file src="HtmlDocGen\HtmlDocGen\bin\Release\HtmlDocGen.xml" target="lib/{tfm}" />
+    <file src="HtmlDocGen\HtmlDocGen\bin\Release\HtmlDocGen.pdb" target="lib/{tfm}" />
+
+    <file src="HtmlDocGen\HtmlDocGen\bin\Release\libeay32.dll" target="lib/{tfm}" />
+    <file src="HtmlDocGen\HtmlDocGen\bin\Release\libgcc_s_dw2-1.dll" target="lib/{tfm}" />
+    <file src="HtmlDocGen\HtmlDocGen\bin\Release\mingwm10.dll" target="lib/{tfm}" />
+    <file src="HtmlDocGen\HtmlDocGen\bin\Release\msvcp120.dll" target="lib/{tfm}" />
+    <file src="HtmlDocGen\HtmlDocGen\bin\Release\msvcr120.dll" target="lib/{tfm}" />
+    <file src="HtmlDocGen\HtmlDocGen\bin\Release\pdftk.exe" target="lib/{tfm}" />
+    <file src="HtmlDocGen\HtmlDocGen\bin\Release\ssleay32.dll" target="lib/{tfm}" />
+    <file src="HtmlDocGen\HtmlDocGen\bin\Release\wkhtmltopdf.exe" target="lib/{tfm}" />
+    <file src="HtmlDocGen\HtmlDocGen\bin\Release\wkhtmltox0.dll" target="lib/{tfm}" />
+
+  </files>
+</package>

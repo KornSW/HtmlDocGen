@@ -43,6 +43,10 @@
     <OptionInfer>On</OptionInfer>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ComponentDiscovery, Version=1.1.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\Modules\Base.SystemExtensions\SystemExtensions\ComponentDiscovery.1.1.1\lib\{tfm}\ComponentDiscovery.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="kSystemExtensions, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\..\..\Modules\Base.SystemExtensions\SystemExtensions\kSystemExtensions.2.1.0-beta\lib\{tfm}\kSystemExtensions.dll</HintPath>
       <Private>True</Private>

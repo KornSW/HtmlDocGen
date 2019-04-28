@@ -67,6 +67,7 @@
     <Compile Include="Dom %28Nodes%29\EmbeddedImage.vb" />
     <Compile Include="Dom %28Nodes%29\MultipleDocumentBlocks.vb" />
     <Compile Include="Dom %28Nodes%29\TemplateBlock.vb" />
+    <Compile Include="GeneratorV2\Class1.vb" />
     <Compile Include="Generator\DocumentGenerator.vb" />
     <Compile Include="Generator\HTML\HtmlDocumentFormatProvider.vb" />
     <Compile Include="Generator\HTML\HtmlDocumentGenerator.vb" />
@@ -138,6 +139,9 @@
     <None Include="wkhtmltox0.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="GeneratorV2\TODO.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

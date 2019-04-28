@@ -1,0 +1,101 @@
+﻿   
+   
+   
+   
+   
+   
+   
+   
+   
+      template provider (multiple möglich), die unter eineindeutigem namen die "XXXXXX.html" files liefern
+         ein default profider liesst ein filesystem ein
+      
+      <include Template="XXXXXXX" inputvar="{{Person.Vorname}}" />    as string hineingeben
+      <include Template="XXXXXXX" [inputvar]="Person.Vorname" />      als objekt hineingeben
+      
+      auch drenkbar <include Template="konto-{{konto.TypeName}}">
+      
+
+      {{QUEELE:serializer-params}}
+      
+      WENN CODEBEHIND DA
+      dann hatt clakass ein attribut <Tpl("XXXXXXX")> + interface ITemplateCodeBehind
+          es wird dann automatisch beim aufruf von Render(datasource übergeben)
+              zb. key=inputvar  value ist dann der Vorname der oben hineigegeben wurde
+              
+          innherhlab kann dass dann auch wider genutzt wrden als  {{inputvar}} um den vornamen zu schrieben
+          
+          
+          datasource ist ein dict of KEy + getter-delegat!!!! + serializer delegat (mit standard implementierung)
+           damit man im Rendermethode auch schnell noch ein key austauschen kann gegen eine eigene implementierung
+           (umlaitung auf feld) oder auch nur das serializer delegat!!!
+           
+           neben der datasource kommt noch eine typeconverter mit
+                .FallbackSerializer
+                .TypespecificSerializer(t)
+                .FallBooleanConverter
+                .TypespecificBoolenConverter(t)
+                .FallbackIterationProcessor
+                .TypespecificIterationProcessor(t)
+           
+           
+           Fallback: wenn key nicht in datasrouce din ist, dann geht auf die properties des codebehind
+            methoden im codebehind müssen mit () angegenben werden
+            
+            
+            beim serialisieren ist .notation erlaubt {{person.vorname}}
+                >> hier sind auch methoden oder extensionmethoden erlaub ->> angabe mit () !!!!!!!! 
+                              
+
+              
+       *renderIf="fdsgg.rfref" -> muss einfach einen boolean liefern oder string (da ist nullorshitespace=falsse) oder zahl da ist >0 =true oder sonst ist nothing=false   bei datum ist > 01.01.1900 true    bei allen nullable(of ) typen ist null = false
+       
+       *renderEach="itemName IN fdsgg.rfref"   das " IN " ist obligatorisch und darf auch nur einmal vorkommen mit den blanks
+   
+   
+   
+   
+   
+         simple
+       {{person.vorname}}
+         mit format
+       {{person.geburttzstag:yyyy-MM-dd}}
+         mit bedingung
+        {{person.avatar?person.avatar:b64;dummyavatar:b64}}
+    
+    
+   
+   
+   außerdem ist bei boolean aussagen ||  &&   !  und klammernbildung erlaubt
+   
+   
+      default serializer
+         für datum liest datumsformat params
+         für image kann -> macht einen b64 datastring
+         für enum -> nutzt typeconverter oder macht name"""
+
+      
+                 
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+      
+      
+      

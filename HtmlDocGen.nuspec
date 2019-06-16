@@ -2,14 +2,14 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>HtmlDocGen</id>
-    <version>0.8.10-beta</version>
+    <version>1.0.0</version>
     <title>HtmlDocGen</title>
     <authors>KornSW</authors>
     <owners>KornSW</owners>
     <!-- https://spdx.org/licenses/ -->
     <license type="expression">GPL-3.0-only</license>
     <projectUrl>https://github.com/KornSW/HtmlDocGen</projectUrl>
-    <!--<iconUrl>https://github.com/KornSW/HtmlDocGen/Master/kSystemExtensions.Logo.png</iconUrl>-->
+    <iconUrl>https://github.com/KornSW/HtmlDocGen/blob/master/PackageIcon.png?raw=true</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>HTML Document Generator</description>
     <releaseNotes></releaseNotes>
@@ -17,21 +17,10 @@
     <tags>HTML Document Generator PDF wkhtmltopdf</tags>
     <dependencies>
       <group>
-        <dependency id="kSystemExtensions" version="2.1.0-beta" />
-        <dependency id="ComponentDiscovery" version="1.1.1" />
+        <dependency id="kSystemExtensions" version="2.2.0" />
+        <dependency id="ComponentDiscovery" version="3.0.0" />
       </group>
     </dependencies>
-    <!--<contentFiles>
-      <files include="Resources/libeay32.dll" buildAction="none" copyToOutput="true" flatten="true" />
-      <files include="Resources/libgcc_s_dw2-1.dll" buildAction="none" copyToOutput="true" flatten="true" />
-      <files include="Resources/mingwm10.dll" buildAction="none" copyToOutput="true" flatten="true" />
-      <files include="Resources/msvcp120.dll" buildAction="none" copyToOutput="true" flatten="true" />
-      <files include="Resources/msvcr120.dll" buildAction="none" copyToOutput="true" flatten="true" />
-      <files include="Resources/pdftk.exe" buildAction="none" copyToOutput="true" flatten="true" />
-      <files include="Resources/ssleay32.dll" buildAction="none" copyToOutput="true" flatten="true" />
-      <files include="Resources/wkhtmltopdf.exe" buildAction="none" copyToOutput="true" flatten="true" />
-      <files include="Resources/wkhtmltox0.dll" buildAction="none" copyToOutput="true" flatten="true" />
-    </contentFiles>-->
   </metadata>
   <files>
 
@@ -41,15 +30,21 @@
     <file src="HtmlDocGen\HtmlDocGen\bin\Release\HtmlDocGen.xml" target="lib/{tfm}" />
     <file src="HtmlDocGen\HtmlDocGen\bin\Release\HtmlDocGen.pdb" target="lib/{tfm}" />
 
-    <file src="HtmlDocGen\HtmlDocGen\bin\Release\libeay32.dll" target="content/Resources" />
-    <file src="HtmlDocGen\HtmlDocGen\bin\Release\libgcc_s_dw2-1.dll" target="content/Resources" />
-    <file src="HtmlDocGen\HtmlDocGen\bin\Release\mingwm10.dll" target="content/Resources" />
-    <file src="HtmlDocGen\HtmlDocGen\bin\Release\msvcp120.dll" target="content/Resources" />
-    <file src="HtmlDocGen\HtmlDocGen\bin\Release\msvcr120.dll" target="content/Resources" />
-    <file src="HtmlDocGen\HtmlDocGen\bin\Release\pdftk.exe" target="content/Resources" />
-    <file src="HtmlDocGen\HtmlDocGen\bin\Release\ssleay32.dll" target="content/Resources" />
-    <file src="HtmlDocGen\HtmlDocGen\bin\Release\wkhtmltopdf.exe" target="content/Resources" />
-    <file src="HtmlDocGen\HtmlDocGen\bin\Release\wkhtmltox0.dll" target="content/Resources" />
-      
+    <file src="HtmlDocGen\HtmlDocGen\(Runtimes)\libeay32.dll" target="WkhtmlRuntimes" />
+    <file src="HtmlDocGen\HtmlDocGen\(Runtimes)\libgcc_s_dw2-1.dll" target="WkhtmlRuntimes" />
+    <file src="HtmlDocGen\HtmlDocGen\(Runtimes)\mingwm10.dll" target="WkhtmlRuntimes" />
+    <file src="HtmlDocGen\HtmlDocGen\(Runtimes)\msvcp120.dll" target="WkhtmlRuntimes" />
+    <file src="HtmlDocGen\HtmlDocGen\(Runtimes)\msvcr120.dll" target="WkhtmlRuntimes" />
+    <file src="HtmlDocGen\HtmlDocGen\(Runtimes)\pdftk.exe" target="WkhtmlRuntimes" />
+    <file src="HtmlDocGen\HtmlDocGen\(Runtimes)\ssleay32.dll" target="WkhtmlRuntimes" />
+    <file src="HtmlDocGen\HtmlDocGen\(Runtimes)\wkhtmltopdf.exe" target="WkhtmlRuntimes" />
+    <file src="HtmlDocGen\HtmlDocGen\(Runtimes)\wkhtmltox0.dll" target="WkhtmlRuntimes" />
+    
+    <!-- Build-Targets zum kopieren der non-.NET Runtimes in den build-output -->
+    <file src="HtmlDocGen\HtmlDocGen\CopyWkHtmlToPdfRuntimesToOutdir.targets" target="build/net46/CopyWkHtmlToPdfRuntimesToOutdir.targets" />
+
+    <!-- Build-Targets, welche bei der Nuget-Package Installation automatisch in die Projektdatei indiziert werden -->
+    <file src="HtmlDocGen\HtmlDocGen\InjectIntoProjectFile.targets" target="build/net46/HtmlDocGen.targets" />
+    
   </files>
 </package>

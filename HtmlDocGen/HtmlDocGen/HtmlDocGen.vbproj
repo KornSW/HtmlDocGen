@@ -43,13 +43,13 @@
     <OptionInfer>On</OptionInfer>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ComponentDiscovery, Version=1.1.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\..\Modules\Base.SystemExtensions\SystemExtensions\ComponentDiscovery.1.1.1\lib\{tfm}\ComponentDiscovery.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="ComponentDiscovery, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\Modules\Base.SystemExtensions\SystemExtensions\ComponentDiscovery.3.0.0\lib\{tfm}\ComponentDiscovery.dll</HintPath>
+      <Private>False</Private>
     </Reference>
-    <Reference Include="kSystemExtensions, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\..\Modules\Base.SystemExtensions\SystemExtensions\kSystemExtensions.2.1.0-beta\lib\{tfm}\kSystemExtensions.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="kSystemExtensions, Version=2.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\Modules\Base.SystemExtensions\SystemExtensions\kSystemExtensions.2.2.0\lib\{tfm}\kSystemExtensions.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -100,6 +100,8 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="CopyWkHtmlToPdfRuntimesToOutdir.targets" />
+    <None Include="InjectIntoProjectFile.targets" />
     <None Include="My Project\Application.myapp">
       <Generator>MyApplicationCodeGenerator</Generator>
       <LastGenOutput>Application.Designer.vb</LastGenOutput>
@@ -112,33 +114,15 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="libeay32.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="libgcc_s_dw2-1.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="mingwm10.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="msvcp120.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="msvcr120.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="pdftk.exe">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="ssleay32.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="wkhtmltopdf.exe">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="wkhtmltox0.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <None Include="%28Runtimes%29\libeay32.dll" />
+    <None Include="%28Runtimes%29\libgcc_s_dw2-1.dll" />
+    <None Include="%28Runtimes%29\mingwm10.dll" />
+    <None Include="%28Runtimes%29\msvcp120.dll" />
+    <None Include="%28Runtimes%29\msvcr120.dll" />
+    <None Include="%28Runtimes%29\pdftk.exe" />
+    <None Include="%28Runtimes%29\ssleay32.dll" />
+    <None Include="%28Runtimes%29\wkhtmltopdf.exe" />
+    <None Include="%28Runtimes%29\wkhtmltox0.dll" />
   </ItemGroup>
   <ItemGroup>
     <None Include="GeneratorV2\TODO.txt" />

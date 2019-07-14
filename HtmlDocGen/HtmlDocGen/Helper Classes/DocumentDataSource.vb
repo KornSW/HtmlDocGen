@@ -1,8 +1,5 @@
 ﻿Imports System
 Imports System.Collections.Generic
-Imports System.ComponentModel
-Imports System.Reflection
-Imports System.Runtime.CompilerServices
 
 Public Class DocumentDataSource
 

@@ -3,8 +3,6 @@ Imports System.Collections.Generic
 Imports System.ComponentModel
 Imports System.IO
 Imports System.Linq
-Imports System.Reflection
-Imports System.Runtime.CompilerServices
 
 Public MustInherit Class TemplateBlock
   Inherits DocumentBlock
@@ -47,39 +45,47 @@ Public MustInherit Class TemplateBlock
   End Sub
 
   Public Overrides Sub WriteOutputTo(target As StreamWriter, provider As IDocumentFormatProvider, dataSourceGetter As Func(Of String, Object), scope As String)
-    Dim wrappeddataSourceGetter = Function(name As String) As Object
-                                    Dim targetName As String = name.SubStringBefore(".")
-                                    Dim memberName As String = name.SubStringAfter(".")
-                                    Dim dataSource As Object
 
-                                    For Each areaId In Me.GetRegisteredAreaIds()
-                                      If (areaId.ToLower() = targetName.ToLower()) Then
-                                        Return Me.Childs(targetName)
-                                      End If
-                                    Next
-                                    If (targetName.ToLower() = "subparts") Then
-                                      Return Me.Childs(memberName)
-                                    ElseIf (targetName.ToLower() = "me") Then
-                                      dataSource = Me
-                                    Else
-                                      dataSource = Me.DataSource.GetSource(targetName) 'targetName seems to be a class
-                                    End If
+    Dim wrappeddataSourceGetter = (
+      Function(name As String) As Object
+        Dim targetName As String = name.SubStringBefore(".")
+        Dim memberName As String = name.SubStringAfter(".")
+        Dim dataSource As Object
 
-                                    If (dataSource Is Nothing) Then
-                                      If (dataSourceGetter IsNot Nothing) Then
-                                        Return dataSourceGetter.Invoke(name)
-                                      Else
-                                        Return Nothing
-                                      End If
-                                    Else
-                                      If (memberName = String.Empty) Then
-                                        Return dataSource
-                                      Else
-                                        Return dataSource.GetType().GetValueFrom(dataSource, memberName)
-                                      End If
-                                    End If
+        'new way with named areas
+        For Each areaId In Me.GetRegisteredAreaIds()
+          If (areaId.ToLower() = targetName.ToLower()) Then
+            Return Me.Childs(targetName)
+          End If
+        Next
 
-                                  End Function
+        'obsolete way
+        If (targetName.ToLower() = "subparts") Then
+          Return Me.Childs(memberName)
+
+        ElseIf (targetName.ToLower() = "me") Then
+          dataSource = Me
+        Else
+          'targetName seems to be a class-name
+          dataSource = Me.DataSource.GetSource(targetName)
+        End If
+
+        If (dataSource Is Nothing) Then
+          If (dataSourceGetter IsNot Nothing) Then
+            Return dataSourceGetter.Invoke(name)
+          Else
+            Return Nothing
+          End If
+        Else
+          If (memberName = String.Empty) Then
+            Return dataSource
+          Else
+            Return dataSource.GetType().GetValueFrom(dataSource, memberName)
+          End If
+        End If
+
+      End Function
+    )
 
     Me.PickSources(dataSourceGetter)
 

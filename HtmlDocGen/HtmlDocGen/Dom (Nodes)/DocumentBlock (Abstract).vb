@@ -1,8 +1,5 @@
 ﻿Imports System
-Imports System.ComponentModel
 Imports System.IO
-Imports System.Reflection
-Imports System.Runtime.CompilerServices
 
 Public MustInherit Class DocumentBlock
 
@@ -10,11 +7,13 @@ Public MustInherit Class DocumentBlock
   End Sub
 
   Private _DataSource As New DocumentDataSource
+
   Public ReadOnly Property DataSource As DocumentDataSource
     Get
       Return _DataSource
     End Get
   End Property
+
   Protected Overridable Function IsVisible(dataSourceGetter As Func(Of String, Object)) As Boolean
     Return True
   End Function

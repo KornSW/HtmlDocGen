@@ -1,11 +1,11 @@
 ﻿Imports System
-Imports System.Collections.Generic
 Imports System.Drawing
 Imports System.IO
-Imports System.Text
 
 Public Class HtmlDocumentFormatProvider
   Implements IDocumentFormatProvider
+
+  Public Property EnableTokenizingV2 As Boolean = False
 
   Public Sub WriteImageToStream(scope As String, target As StreamWriter, dataSourceGetter As Func(Of String, Object), source As Image) Implements IDocumentFormatProvider.WriteImageToStream
     Me.WriteObjectToStream(scope, target, dataSourceGetter, source, False)
@@ -13,7 +13,6 @@ Public Class HtmlDocumentFormatProvider
 
   Public Sub WriteTemplateToStream(scope As String, target As StreamWriter, dataSourceGetter As Func(Of String, Object), forTarget As Type, templateStream As Stream) Implements IDocumentFormatProvider.WriteTemplateToStream
     Me.WriteStreamToStream(scope, target, dataSourceGetter, templateStream, True)
-    'Me.WriteStreamToStream(scope, target, dataSourceGetter, Me.OpenTemplateStream(scope, forTarget), True)
   End Sub
 
   Public Sub WriteStreamToStream(scope As String, target As StreamWriter, dataSourceGetter As Func(Of String, Object), source As Stream, resolvePlaceholders As Boolean) Implements IDocumentFormatProvider.WriteStreamToStream
@@ -34,26 +33,36 @@ Public Class HtmlDocumentFormatProvider
 
   Public Sub WriteTextToStream(scope As String, target As StreamWriter, dataSourceGetter As Func(Of String, Object), textReader As TextReader)
 
-    Dim placeholderProcessingMethod =
+    Dim placeholderProcessingMethod = (
       Sub(placeHolderString As String)
+
         Dim placeHolderObject As Object
         Dim formatString = placeHolderString.SubStringAfter(":").NothingIfEmpty()
         Dim objectName = placeHolderString.SubStringBefore(":")
         Dim newScope As String = scope
+
         If (objectName.Contains("~")) Then
           newScope = objectName.SubStringAfter("~")
           objectName = objectName.SubStringBefore("~")
         End If
+
         placeHolderObject = dataSourceGetter.Invoke(objectName)
         Me.WriteObjectToStream(newScope, target, dataSourceGetter, placeHolderObject, False, formatString)
-      End Sub
 
-    Dim contentProcessingMethod =
+      End Sub
+    )
+
+    Dim contentProcessingMethod = (
       Sub(placeHolderString As String)
         Me.WriteObjectToStream(scope, target, dataSourceGetter, placeHolderString, True)
       End Sub
+    )
 
-    textReader.Tokenize("<!--{", "}-->", placeholderProcessingMethod, contentProcessingMethod)
+    If (Me.EnableTokenizingV2) Then
+      textReader.Tokenize("{{", "}}", placeholderProcessingMethod, contentProcessingMethod)
+    Else
+      textReader.Tokenize("<!--{", "}-->", placeholderProcessingMethod, contentProcessingMethod)
+    End If
 
   End Sub
 
@@ -75,10 +84,8 @@ Public Class HtmlDocumentFormatProvider
       DirectCast(obj, DocumentBlock).WriteOutputTo(target, Me, dataSourceGetter, scope)
 
     ElseIf (TypeOf (obj) Is Image) Then 'IMAGE
-      'target.Write("<img src=""data:image/png;base64,")
       target.Write("data:image/png;base64,")
       target.Write(DirectCast(obj, Image).GetBytes(System.Drawing.Imaging.ImageFormat.Png).ToBase64String())
-      'target.Write(""" />")
 
     ElseIf (TypeOf (obj) Is Stream) Then 'STREAM (a datasource could inject a file)
       Me.WriteStreamToStream(scope, target, dataSourceGetter, DirectCast(obj, Stream), False)
@@ -106,7 +113,9 @@ Public Class HtmlDocumentFormatProvider
       Else
         target.Write(Me.EscapeHtml(str))
       End If
+
     End If
+
   End Sub
 
   Public Sub WritePagebreakToStream(scope As String, target As StreamWriter) Implements IDocumentFormatProvider.WritePagebreakToStream
@@ -158,6 +167,5 @@ Public Class HtmlDocumentFormatProvider
     'target.WriteLine("</body>")
     'target.WriteLine("</html>")
   End Sub
-
 
 End Class

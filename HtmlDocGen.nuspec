@@ -26,9 +26,9 @@
 
     <!-- https://docs.microsoft.com/en-us/nuget/create-packages/creating-a-package#from-a-convention-based-working-directory -->
     
-    <file src="HtmlDocGen\HtmlDocGen\bin\Release\HtmlDocGen.dll" target="lib/{tfm}" />
-    <file src="HtmlDocGen\HtmlDocGen\bin\Release\HtmlDocGen.xml" target="lib/{tfm}" />
-    <file src="HtmlDocGen\HtmlDocGen\bin\Release\HtmlDocGen.pdb" target="lib/{tfm}" />
+    <file src="(Stage)\bin\HtmlDocGen.dll" target="lib/{tfm}" />
+    <file src="(Stage)\bin\HtmlDocGen.xml" target="lib/{tfm}" />
+    <file src="(Stage)\bin\HtmlDocGen.pdb" target="lib/{tfm}" />
 
     <file src="HtmlDocGen\HtmlDocGen\(Runtimes)\libeay32.dll" target="WkhtmlRuntimes" />
     <file src="HtmlDocGen\HtmlDocGen\(Runtimes)\libgcc_s_dw2-1.dll" target="WkhtmlRuntimes" />

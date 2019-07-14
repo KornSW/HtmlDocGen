@@ -1,1 +1,0 @@
-nuget pack ./HtmlDocGen.nuspec -Build -Symbols -OutputDirectory "..\..\(NuGetRepo)" -InstallPackageToOutputPath

@@ -10,14 +10,15 @@
     <AssemblyName>HtmlDocGen</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <MyType>Windows</MyType>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <DefineDebug>true</DefineDebug>
     <DefineTrace>true</DefineTrace>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\..\%28Stage%29\Bin\</OutputPath>
     <DocumentationFile>HtmlDocGen.xml</DocumentationFile>
     <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
   </PropertyGroup>
@@ -26,7 +27,7 @@
     <DefineDebug>false</DefineDebug>
     <DefineTrace>true</DefineTrace>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>..\..\%28Stage%29\Bin\</OutputPath>
     <DocumentationFile>HtmlDocGen.xml</DocumentationFile>
     <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
   </PropertyGroup>
@@ -43,12 +44,14 @@
     <OptionInfer>On</OptionInfer>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ComponentDiscovery, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\..\Modules\Base.SystemExtensions\SystemExtensions\ComponentDiscovery.3.0.0\lib\{tfm}\ComponentDiscovery.dll</HintPath>
+    <Reference Include="ComponentDiscovery">
+      <HintPath>..\..\(Vendor)\NuGet\ComponentDiscovery.3.0.0\lib\{tfm}\ComponentDiscovery.dll</HintPath>
+      <Private>True</Private>
       <Private>False</Private>
     </Reference>
-    <Reference Include="kSystemExtensions, Version=2.2.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\..\Modules\Base.SystemExtensions\SystemExtensions\kSystemExtensions.2.2.0\lib\{tfm}\kSystemExtensions.dll</HintPath>
+    <Reference Include="kSystemExtensions">
+      <HintPath>..\..\(Vendor)\NuGet\kSystemExtensions.2.2.0\lib\{tfm}\kSystemExtensions.dll</HintPath>
+      <Private>True</Private>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />

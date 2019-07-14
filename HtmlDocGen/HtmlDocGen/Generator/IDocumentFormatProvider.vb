@@ -1,22 +1,6 @@
 ﻿Imports System
-Imports System.Collections.Generic
 Imports System.Drawing
 Imports System.IO
-Imports System.Text
-Imports System.Diagnostics
-
-
-
-'<AttributeUsage(AttributeTargets.Property, Inherited:=True)>
-'Public Class TemplateContentAttribute
-'  Inherits Attribute
-
-'  Public Sub New()
-'    MyBase.New()
-'  End Sub
-
-'End Class
-
 
 Public Interface IDocumentFormatProvider
 

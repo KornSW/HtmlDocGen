@@ -44,14 +44,13 @@
     <OptionInfer>On</OptionInfer>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ComponentDiscovery, Version=3.1.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\(Vendor)\NuGet\ComponentDiscovery.3.1.2\lib\{tfm}\ComponentDiscovery.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="ComponentDiscovery, Version=4.1.0.163, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\(Vendor)\NuGet\ComponentDiscovery.4.1.0.163\lib\{tfm}\ComponentDiscovery.dll</HintPath>
+      <Private>False</Private>
     </Reference>
-    <Reference Include="kSystemExtensions">
-      <HintPath>..\..\(Vendor)\NuGet\kSystemExtensions.2.2.1\lib\{tfm}\kSystemExtensions.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="kSystemExtensions, Version=2.3.7.142, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\(Vendor)\NuGet\kSystemExtensions.2.3.7.142\lib\{tfm}\kSystemExtensions.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />

@@ -18,7 +18,7 @@
     <dependencies>
       <group>
         <dependency id="kSystemExtensions" version="[2.3.7,2.9999]" />
-        <dependency id="ComponentDiscovery" version="[4.1.0,4.9999]" />
+        <dependency id="ComponentDiscovery" version="[4.1.1,4.9999]" />
       </group>
     </dependencies>
   </metadata>

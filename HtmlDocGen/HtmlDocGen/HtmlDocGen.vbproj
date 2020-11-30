@@ -44,8 +44,8 @@
     <OptionInfer>On</OptionInfer>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ComponentDiscovery, Version=4.1.1.264, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\..\(Vendor)\NuGet\ComponentDiscovery.4.1.1.264\lib\{tfm}\ComponentDiscovery.dll</HintPath>
+    <Reference Include="ComponentDiscovery, Version=4.1.1.292, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\..\(Vendor)\NuGet\ComponentDiscovery.4.1.1.292\lib\{tfm}\ComponentDiscovery.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="kSystemExtensions, Version=2.3.7.227, Culture=neutral, PublicKeyToken=null">

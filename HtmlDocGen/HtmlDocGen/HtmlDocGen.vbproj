@@ -44,12 +44,16 @@
     <OptionInfer>On</OptionInfer>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ComponentDiscovery, Version=4.7.6.699, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\..\(Vendor)\NuGet\ComponentDiscovery.4.7.6.699\lib\net46\ComponentDiscovery.dll</HintPath>
+    <Reference Include="ComponentDiscovery, Version=4.9.0.817, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\..\(Vendor)\NuGet\ComponentDiscovery.4.9.0.817\lib\net46\ComponentDiscovery.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="kSystemExtensions, Version=3.0.0.434, Culture=neutral, PublicKeyToken=null">
       <HintPath>..\..\(Vendor)\NuGet\kSystemExtensions.3.0.0.434\lib\net46\kSystemExtensions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed">
+      <HintPath>..\..\(Vendor)\NuGet\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />

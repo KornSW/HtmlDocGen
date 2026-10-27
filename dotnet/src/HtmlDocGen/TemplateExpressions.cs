@@ -1180,7 +1180,7 @@ namespace HtmlDocGen {
   /// </summary>
   internal static class OverloadResolver {
 
-    private const int _NotApplicable = -1;
+    private const int NotApplicable = -1;
 
     /// <summary>
     /// Selects the best overload and converts the arguments.
@@ -1194,7 +1194,7 @@ namespace HtmlDocGen {
       foreach (MethodInfo candidate in candidates) {
         object[] converted;
         int cost = OverloadResolver.GetCost(candidate, arguments, out converted);
-        if (cost == _NotApplicable) {
+        if (cost == NotApplicable) {
           continue;
         }
         if (cost < bestCost) {
@@ -1228,26 +1228,26 @@ namespace HtmlDocGen {
       ParameterInfo[] parameters = candidate.GetParameters();
       converted = null;
       if (arguments.Length > parameters.Length) {
-        return _NotApplicable;
+        return NotApplicable;
       }
       object[] values = new object[parameters.Length];
       int total = 0;
       for (int index = 0; index < parameters.Length; index++) {
         ParameterInfo parameter = parameters[index];
         if (parameter.ParameterType.IsByRef) {
-          return _NotApplicable;
+          return NotApplicable;
         }
         if (index >= arguments.Length) {
           if (!parameter.HasDefaultValue) {
-            return _NotApplicable;
+            return NotApplicable;
           }
           values[index] = parameter.DefaultValue;
           continue;
         }
         object value;
         int cost = OverloadResolver.TryConvert(arguments[index], parameter.ParameterType, out value);
-        if (cost == _NotApplicable) {
-          return _NotApplicable;
+        if (cost == NotApplicable) {
+          return NotApplicable;
         }
         values[index] = value;
         total += cost;
@@ -1266,7 +1266,7 @@ namespace HtmlDocGen {
         if (!parameterType.IsValueType || underlyingType != null) {
           return 1;
         }
-        return _NotApplicable;
+        return NotApplicable;
       }
       if (underlyingType == null) {
         underlyingType = parameterType;
@@ -1289,7 +1289,7 @@ namespace HtmlDocGen {
           converted = Convert.ChangeType(argument, underlyingType, CultureInfo.InvariantCulture);
           return 3;
         } catch (OverflowException) {
-          return _NotApplicable;
+          return NotApplicable;
         }
       }
       if (underlyingType.IsEnum && argument is string) {
@@ -1299,7 +1299,7 @@ namespace HtmlDocGen {
           return 4;
         }
       }
-      return _NotApplicable;
+      return NotApplicable;
     }
 
   }

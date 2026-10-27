@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>HtmlDocGen</id>
+    <version>0.0.0</version>
+    <title>HtmlDocGen</title>
+    <authors>KornSW</authors>
+    <owners>KornSW</owners>
+    <copyright>KornSW</copyright>
+    <description>Dependency-free HTML template rendering engine for web pages, letters and document pipelines.</description>
+    <tags>HTML Template Rendering Document Generator</tags>
+    <!-- https://spdx.org/licenses/ (MIT + Commons Clause has no SPDX identifier, therefore the license file) -->
+    <license type="file">LICENSE</license>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <icon>PackageIcon.png</icon>
+    <projectUrl>https://github.com/KornSW/HtmlDocGen</projectUrl>
+    <dependencies>
+      <!-- (configuration for the Versioning-Util, which is not part of the xml-schema, because it's a pre-processor)
+      "KVU": {
+        "versioningTwins":[ ],
+        "dependencySync": {
+          "addMissing":true, "updateExisting":true, "allowDowngrades":true, "removeOrphaned":false,
+          "constraintLevel":"SEM-SAFE",
+          "sources": [
+            { "origin":"src\\HtmlDocGen.net8.0\\HtmlDocGen.net8.0.csproj", "targetFramework":"=" },
+            { "origin":"src\\HtmlDocGen.net10.0\\HtmlDocGen.net10.0.csproj", "targetFramework":"=" }
+          ]
+        }
+      } -->
+      <group targetFramework="net8.0">
+      </group>
+      <group targetFramework="net10.0">
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="PackageIcon.png" target="" />
+    <file src="..\LICENSE" target="" />
+    <!-- .NET 8.0 -->
+    <file src="dist\Shared\net8.0\HtmlDocGen.dll" target="lib/net8.0" />
+    <file src="dist\Shared\net8.0\HtmlDocGen.xml" target="lib/net8.0" />
+    <file src="dist\Shared\net8.0\HtmlDocGen.pdb" target="lib/net8.0" />
+    <!-- .NET 10.0 -->
+    <file src="dist\Shared\net10.0\HtmlDocGen.dll" target="lib/net10.0" />
+    <file src="dist\Shared\net10.0\HtmlDocGen.xml" target="lib/net10.0" />
+    <file src="dist\Shared\net10.0\HtmlDocGen.pdb" target="lib/net10.0" />
+  </files>
+</package>

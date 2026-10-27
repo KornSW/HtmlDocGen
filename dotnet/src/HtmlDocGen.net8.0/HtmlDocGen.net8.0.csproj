@@ -1,1 +1,65 @@
-<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><AssemblyName>HtmlDocGen</AssemblyName><RootNamespace>HtmlDocGen</RootNamespace><ImplicitUsings>disable</ImplicitUsings><Nullable>disable</Nullable><GenerateDocumentationFile>true</GenerateDocumentationFile><DefineConstants>NET_CORE;NET_8_</DefineConstants></PropertyGroup><ItemGroup><Compile Include="../HtmlDocGen/TemplateEngine.cs" Link="TemplateEngine.cs" /></ItemGroup></Project>
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- PROJECT -->
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>HtmlDocGen</AssemblyName>
+    <RootNamespace>HtmlDocGen</RootNamespace>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Configurations>Debug;Release</Configurations>
+  </PropertyGroup>
+
+  <!-- META DATA -->
+
+  <PropertyGroup>
+    <PackageId>HtmlDocGen</PackageId>
+    <Description>HtmlDocGen</Description>
+    <Product>HtmlDocGen</Product>
+    <PackageTags>HTML Template Rendering Document Generator</PackageTags>
+    <Company>KornSW</Company>
+    <Copyright>Copyright KornSW</Copyright>
+    <Authors>KornSW</Authors>
+    <!-- VERSION -->
+    <Version>0.0.0</Version>
+    <AssemblyVersion>0.0.0</AssemblyVersion>
+    <FileVersion>0.0.0</FileVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- ADDITIONAL ASSEMBLY-ATTRIBUTES -->
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>SourceContext</_Parameter1>
+      <_Parameter2>HtmlDocGen</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <!-- BUILD -->
+
+  <PropertyGroup>
+    <OutputPath>..\..\dist\Shared</OutputPath>
+    <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <DefineConstants>$(DefineConstants);NET_CORE;NET_8_;NET_8</DefineConstants>
+    <NoWarn>$(NoWarn);1701;1702;1591</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <DefineConstants>$(DefineConstants);TRACE;DEBUG</DefineConstants>
+    <Optimize>False</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
+    <Optimize>True</Optimize>
+  </PropertyGroup>
+
+  <!-- SHARED PROJECTS -->
+
+  <Import Project="..\HtmlDocGen\HtmlDocGen.projitems" Label="Shared" />
+
+</Project>

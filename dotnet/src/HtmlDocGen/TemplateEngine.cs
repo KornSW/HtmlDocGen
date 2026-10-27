@@ -1,379 +1,354 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.IO;
-using System.Reflection;
-using System.Text;
-using System.Net;
 
 namespace HtmlDocGen {
 
-  /// <summary>Resolves template text from a logical name.</summary>
-  public interface ITemplateSource {
-    /// <summary>Reads a named template.</summary>
-    string Read(string name);
-  }
+  // v 2.0.0
 
-  /// <summary>Resolves templates from an in-memory dictionary.</summary>
-  public sealed class MemoryTemplateSource : ITemplateSource {
-    private readonly IDictionary<string, string> _Templates;
-    /// <summary>Creates an in-memory source.</summary>
-    public MemoryTemplateSource(IDictionary<string, string> templates) {
-      _Templates = templates ?? throw new ArgumentNullException(nameof(templates));
-    }
-    /// <summary>Reads a named template.</summary>
-    public string Read(string name) {
-      string result;
-      if (!_Templates.TryGetValue(name, out result)) {
-        throw new FileNotFoundException("Template was not found: " + name);
+  /// <summary>
+  /// Options of a <see cref="TemplateEngine"/>.
+  /// </summary>
+  public sealed class TemplateEngineOptions {
+
+    private CultureInfo _Culture = CultureInfo.InvariantCulture;
+    private MemberAccessPolicy _Policy = MemberAccessPolicy.Trusted;
+    private int _MaxIncludeDepth = 32;
+    private bool _CacheParsedTemplates = true;
+
+    /// <summary>
+    /// The culture used for formatting values (default: invariant culture).
+    /// Can be overridden per rendering operation via <see cref="TemplateContext.Culture"/>.
+    /// </summary>
+    public CultureInfo Culture {
+      get {
+        return _Culture;
       }
-      return result;
-    }
-  }
-
-  /// <summary>Resolves templates embedded in a .NET assembly.</summary>
-  public sealed class EmbeddedTemplateSource : ITemplateSource {
-    private readonly Assembly _Assembly;
-    private readonly string _Prefix;
-    /// <summary>Creates a source for embedded resources.</summary>
-    public EmbeddedTemplateSource(Assembly assembly, string prefix) {
-      _Assembly = assembly ?? throw new ArgumentNullException(nameof(assembly));
-      _Prefix = prefix ?? string.Empty;
-    }
-    /// <summary>Reads a named resource using its complete logical name.</summary>
-    public string Read(string name) {
-      string resourceName = _Prefix + name.Replace('/', '.');
-      using (Stream stream = _Assembly.GetManifestResourceStream(resourceName)) {
-        if (stream == null) {
-          throw new FileNotFoundException("Embedded template was not found: " + resourceName);
+      set {
+        if (value == null) {
+          throw new ArgumentNullException(nameof(value));
         }
-        using (StreamReader reader = new StreamReader(stream)) {
-          return reader.ReadToEnd();
+        _Culture = value;
+      }
+    }
+
+    /// <summary>
+    /// The member access policy (default: <see cref="MemberAccessPolicy.Trusted"/>).
+    /// </summary>
+    public MemberAccessPolicy Policy {
+      get {
+        return _Policy;
+      }
+      set {
+        if (value == null) {
+          throw new ArgumentNullException(nameof(value));
         }
+        _Policy = value;
       }
     }
-  }
 
-  /// <summary>Resolves templates below a designated filesystem directory.</summary>
-  public sealed class FileTemplateSource : ITemplateSource {
-    private readonly string _Root;
-    /// <summary>Creates a filesystem template source.</summary>
-    public FileTemplateSource(string root) {
-      if (string.IsNullOrWhiteSpace(root)) {
-        throw new ArgumentException("A template root is required.", nameof(root));
+    /// <summary>
+    /// The maximum include nesting depth; exceeding it reports a cyclic include (default: 32).
+    /// </summary>
+    public int MaxIncludeDepth {
+      get {
+        return _MaxIncludeDepth;
       }
-      _Root = Path.GetFullPath(root);
-    }
-    /// <summary>Reads a template while rejecting directory traversal.</summary>
-    public string Read(string name) {
-      string full = Path.GetFullPath(Path.Combine(_Root, name.Replace('/', Path.DirectorySeparatorChar)));
-      string prefix = _Root.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
-      if (!full.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)) {
-        throw new InvalidOperationException("Template path escapes the configured root.");
-      }
-      return File.ReadAllText(full);
-    }
-  }
-
-  /// <summary>Holds named data sources and explicit component-local variables.</summary>
-  public sealed class TemplateContext {
-    private readonly Dictionary<string, object> _Sources = new Dictionary<string, object>(StringComparer.Ordinal);
-    private readonly Dictionary<string, object> _Locals = new Dictionary<string, object>(StringComparer.Ordinal);
-    /// <summary>Registers a root source; names must begin with an underscore.</summary>
-    public void AddSource(string name, object value) {
-      if (string.IsNullOrWhiteSpace(name) || !name.StartsWith("_", StringComparison.Ordinal)) {
-        throw new ArgumentException("Source names must begin with an underscore.", nameof(name));
-      }
-      _Sources[name] = value;
-    }
-    /// <summary>Registers an explicit local variable.</summary>
-    public void AddLocal(string name, object value) {
-      if (string.IsNullOrWhiteSpace(name) || name.StartsWith("_", StringComparison.Ordinal)) {
-        throw new ArgumentException("Local names must not begin with an underscore.", nameof(name));
-      }
-      _Locals[name] = value;
-    }
-    /// <summary>Creates an isolated child context retaining sources and only explicit locals.</summary>
-    public TemplateContext CreateChild() {
-      TemplateContext child = new TemplateContext();
-      foreach (KeyValuePair<string, object> pair in _Sources) {
-        child._Sources.Add(pair.Key, pair.Value);
-      }
-      return child;
-    }
-    /// <summary>Creates a loop scope with one additional local variable.</summary>
-    internal TemplateContext CreateIteration(string name, object value) {
-      TemplateContext child = this.CreateChild();
-      foreach (KeyValuePair<string, object> pair in _Locals) {
-        child._Locals[pair.Key] = pair.Value;
-      }
-      child.AddLocal(name, value);
-      return child;
-    }
-    /// <summary>Resolves a root name.</summary>
-    internal object ResolveRoot(string name) {
-      object value;
-      if (name.StartsWith("_", StringComparison.Ordinal)) {
-        if (_Sources.TryGetValue(name, out value)) {
-          return value;
+      set {
+        if (value < 1) {
+          throw new ArgumentOutOfRangeException(nameof(value));
         }
-      } else if (_Locals.TryGetValue(name, out value)) {
-        return value;
+        _MaxIncludeDepth = value;
       }
-      throw new InvalidOperationException("Unknown template binding: " + name);
     }
+
+    /// <summary>
+    /// True to cache parsed templates by name (default). Disable during template development with a file source.
+    /// </summary>
+    public bool CacheParsedTemplates {
+      get {
+        return _CacheParsedTemplates;
+      }
+      set {
+        _CacheParsedTemplates = value;
+      }
+    }
+
   }
 
-  /// <summary>Minimal dependency-free HTML template renderer.</summary>
+  /// <summary>
+  /// Dependency-free HTML-first template renderer. Thread-safe; create one instance per template source and reuse it.
+  /// </summary>
   public sealed class TemplateEngine {
-    private readonly ITemplateSource _Source;
-    private readonly CultureInfo _Culture;
-    /// <summary>Creates a renderer using the specified source and culture.</summary>
-    public TemplateEngine(ITemplateSource source, CultureInfo culture) {
-      _Source = source ?? throw new ArgumentNullException(nameof(source));
-      _Culture = culture ?? CultureInfo.InvariantCulture;
+
+    private readonly TemplateRuntime _Runtime;
+
+    /// <summary>
+    /// Creates an engine with default options.
+    /// </summary>
+    /// <param name="source">The template source.</param>
+    public TemplateEngine(ITemplateSource source) : this(source, new TemplateEngineOptions()) {
     }
-    /// <summary>Renders a named template with a fresh include stack.</summary>
-    public string Render(string name, TemplateContext context) {
+
+    /// <summary>
+    /// Creates an engine with default options and the specified culture.
+    /// </summary>
+    /// <param name="source">The template source.</param>
+    /// <param name="culture">The formatting culture.</param>
+    public TemplateEngine(ITemplateSource source, CultureInfo culture) : this(source, TemplateEngine.CreateOptions(culture)) {
+    }
+
+    /// <summary>
+    /// Creates an engine with the specified options.
+    /// </summary>
+    /// <param name="source">The template source.</param>
+    /// <param name="options">The engine options.</param>
+    public TemplateEngine(ITemplateSource source, TemplateEngineOptions options) {
+      if (source == null) {
+        throw new ArgumentNullException(nameof(source));
+      }
+      if (options == null) {
+        throw new ArgumentNullException(nameof(options));
+      }
+      _Runtime = new TemplateRuntime(source, options.Culture, options.Policy, options.MaxIncludeDepth, options.CacheParsedTemplates);
+    }
+
+    /// <summary>
+    /// Renders a named template and returns the HTML.
+    /// </summary>
+    /// <param name="templateName">The logical template name.</param>
+    /// <param name="context">The data for this rendering operation.</param>
+    public string Render(string templateName, TemplateContext context) {
+      using (StringWriter writer = new StringWriter(CultureInfo.InvariantCulture)) {
+        this.RenderTo(templateName, context, writer);
+        return writer.ToString();
+      }
+    }
+
+    /// <summary>
+    /// Renders a named template directly to a writer (streaming).
+    /// </summary>
+    /// <param name="templateName">The logical template name.</param>
+    /// <param name="context">The data for this rendering operation.</param>
+    /// <param name="writer">The target writer.</param>
+    public void RenderTo(string templateName, TemplateContext context, TextWriter writer) {
+      if (templateName == null) {
+        throw new ArgumentNullException(nameof(templateName));
+      }
       if (context == null) {
         throw new ArgumentNullException(nameof(context));
       }
-      return this.RenderInternal(name, context, new HashSet<string>(StringComparer.Ordinal));
-    }
-    /// <summary>Writes a rendered template to a text writer.</summary>
-    public void RenderTo(string name, TemplateContext context, TextWriter writer) {
       if (writer == null) {
         throw new ArgumentNullException(nameof(writer));
       }
-      writer.Write(this.Render(name, context));
+      TemplateDocument document = this.LoadRequired(templateName);
+      CultureInfo culture = context.Culture;
+      if (culture == null) {
+        culture = _Runtime.Culture;
+      }
+      EvaluationContext evaluationContext = new EvaluationContext(_Runtime, document, context.CreateRootScope(templateName), culture);
+      TemplateNode.RenderAll(document.Nodes, writer, evaluationContext);
     }
-    /// <summary>Renders a named template and rejects recursive inclusion.</summary>
-    private string RenderInternal(string name, TemplateContext context, HashSet<string> stack) {
-      if (!stack.Add(name)) {
-        throw new InvalidOperationException("Recursive template inclusion: " + name);
+
+    /// <summary>
+    /// Parses a named template without rendering it, reporting syntax errors as <see cref="TemplateException"/>.
+    /// </summary>
+    /// <param name="templateName">The logical template name.</param>
+    public void Validate(string templateName) {
+      if (templateName == null) {
+        throw new ArgumentNullException(nameof(templateName));
       }
-      try {
-        return this.RenderText(_Source.Read(name), context, stack);
-      } finally {
-        stack.Remove(name);
+      this.LoadRequired(templateName);
+    }
+
+    /// <summary>
+    /// Removes all cached parsed templates.
+    /// </summary>
+    public void ClearCache() {
+      _Runtime.ClearCache();
+    }
+
+    /// <summary>
+    /// Loads a template or throws when the source does not provide it.
+    /// </summary>
+    private TemplateDocument LoadRequired(string templateName) {
+      TemplateDocument document = _Runtime.LoadDocument(templateName);
+      if (document == null) {
+        throw new FileNotFoundException("Template '" + templateName + "' was not found.", templateName);
+      }
+      return document;
+    }
+
+    /// <summary>
+    /// Creates options for the specified culture.
+    /// </summary>
+    private static TemplateEngineOptions CreateOptions(CultureInfo culture) {
+      TemplateEngineOptions options = new TemplateEngineOptions();
+      if (culture != null) {
+        options.Culture = culture;
+      }
+      return options;
+    }
+
+  }
+
+  /// <summary>
+  /// Engine-wide configuration, caches and value semantics shared by all rendering operations.
+  /// </summary>
+  internal sealed class TemplateRuntime {
+
+    private readonly ITemplateSource _Source;
+    private readonly CultureInfo _Culture;
+    private readonly MemberAccessPolicy _Policy;
+    private readonly int _MaxIncludeDepth;
+    private readonly bool _CacheParsedTemplates;
+    private readonly MemberCache _Members = new MemberCache();
+    private readonly ConcurrentDictionary<string, TemplateDocument> _Documents = new ConcurrentDictionary<string, TemplateDocument>(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Creates a runtime.
+    /// </summary>
+    public TemplateRuntime(ITemplateSource source, CultureInfo culture, MemberAccessPolicy policy, int maxIncludeDepth, bool cacheParsedTemplates) {
+      _Source = source;
+      _Culture = culture;
+      _Policy = policy;
+      _MaxIncludeDepth = maxIncludeDepth;
+      _CacheParsedTemplates = cacheParsedTemplates;
+    }
+
+    /// <summary>
+    /// The default formatting culture.
+    /// </summary>
+    public CultureInfo Culture {
+      get {
+        return _Culture;
       }
     }
-    /// <summary>Processes text interpolation and structural directives.</summary>
-    private string RenderText(string template, TemplateContext context, HashSet<string> stack) {
-      StringBuilder output = new StringBuilder();
-      int position = 0;
-      while (position < template.Length) {
-        int expression = template.IndexOf("{{", position, StringComparison.Ordinal);
-        int directive = template.IndexOf("<u-", position, StringComparison.Ordinal);
-        int next = template.Length;
-        if (expression >= 0 && expression < next) {
-          next = expression;
-        }
-        if (directive >= 0 && directive < next) {
-          next = directive;
-        }
-        output.Append(template.Substring(position, next - position));
-        if (next == template.Length) {
-          break;
-        }
-        if (next == expression) {
-          int end = template.IndexOf("}}", next + 2, StringComparison.Ordinal);
-          if (end < 0) {
-            throw new FormatException("Unclosed template expression.");
-          }
-          string expressionText = template.Substring(next + 2, end - next - 2).Trim();
-          bool raw = expressionText.StartsWith("raw ", StringComparison.Ordinal);
-          if (raw) {
-            expressionText = expressionText.Substring(4).Trim();
-          }
-          string format = null;
-          int colon = expressionText.IndexOf(':');
-          if (colon >= 0) {
-            format = expressionText.Substring(colon + 1);
-            expressionText = expressionText.Substring(0, colon);
-          }
-          object value = this.Evaluate(expressionText, context);
-          string rendered = this.Format(value, format);
-          output.Append(raw ? rendered : WebUtility.HtmlEncode(rendered));
-          position = end + 2;
-        } else {
-          int openEnd = template.IndexOf('>', next);
-          if (openEnd < 0) {
-            throw new FormatException("Unclosed template directive.");
-          }
-          string tag = template.Substring(next + 1, openEnd - next - 1);
-          if (tag.StartsWith("u-include ", StringComparison.Ordinal)) {
-            string name = this.ReadAttribute(tag, "template");
-            output.Append(this.RenderInternal(name, context.CreateChild(), stack));
-            position = openEnd + 1;
-            continue;
-          }
-          bool loop = tag.StartsWith("u-for ", StringComparison.Ordinal);
-          bool condition = tag.StartsWith("u-if ", StringComparison.Ordinal);
-          if (!loop && !condition) {
-            throw new FormatException("Unsupported directive: " + tag);
-          }
-          string close = loop ? "</u-for>" : "</u-if>";
-          string open = loop ? "<u-for " : "<u-if ";
-          int depth = 1;
-          int scan = openEnd + 1;
-          int endStart = -1;
-          while (scan < template.Length) {
-            int nestedOpen = template.IndexOf(open, scan, StringComparison.Ordinal);
-            int nestedClose = template.IndexOf(close, scan, StringComparison.Ordinal);
-            if (nestedClose < 0) {
-              throw new FormatException("Missing closing directive: " + close);
-            }
-            if (nestedOpen >= 0 && nestedOpen < nestedClose) {
-              depth++;
-              scan = nestedOpen + open.Length;
-            } else {
-              depth--;
-              scan = nestedClose + close.Length;
-              if (depth == 0) {
-                endStart = nestedClose;
-                break;
-              }
-            }
-          }
-          string body = template.Substring(openEnd + 1, endStart - openEnd - 1);
-          if (loop) {
-            string declaration = this.ReadAttribute(tag, "each");
-            int separator = declaration.IndexOf(" in ", StringComparison.Ordinal);
-            if (separator <= 0) {
-              throw new FormatException("Expected 'item in expression' in u-for.");
-            }
-            string itemName = declaration.Substring(0, separator).Trim();
-            string collectionExpression = declaration.Substring(separator + 4).Trim();
-            object collection = this.Evaluate(collectionExpression, context);
-            if (collection != null && !(collection is string)) {
-              IEnumerable enumerable = collection as IEnumerable;
-              if (enumerable == null) {
-                throw new InvalidOperationException("u-for requires IEnumerable.");
-              }
-              foreach (object item in enumerable) {
-                output.Append(this.RenderText(body, context.CreateIteration(itemName, item), stack));
-              }
-            }
-          } else {
-            object value = this.Evaluate(this.ReadAttribute(tag, "test"), context);
-            if (this.IsTrue(value)) {
-              output.Append(this.RenderText(body, context, stack));
-            }
-          }
-          position = scan;
-        }
+
+    /// <summary>
+    /// The member access policy.
+    /// </summary>
+    public MemberAccessPolicy Policy {
+      get {
+        return _Policy;
       }
-      return output.ToString();
     }
-    /// <summary>Extracts a quoted directive attribute.</summary>
-    private string ReadAttribute(string tag, string name) {
-      string marker = name + "=\"";
-      int start = tag.IndexOf(marker, StringComparison.Ordinal);
-      if (start < 0) {
-        throw new FormatException("Missing directive attribute: " + name);
+
+    /// <summary>
+    /// The maximum include depth.
+    /// </summary>
+    public int MaxIncludeDepth {
+      get {
+        return _MaxIncludeDepth;
       }
-      start += marker.Length;
-      int end = tag.IndexOf('"', start);
-      if (end < 0) {
-        throw new FormatException("Unclosed directive attribute: " + name);
-      }
-      return tag.Substring(start, end - start);
     }
-    /// <summary>Resolves member paths and explicit public method calls.</summary>
-    private object Evaluate(string expression, TemplateContext context) {
-      string text = expression.Trim();
-      if (text.Length == 0) {
-        throw new FormatException("Empty binding expression.");
+
+    /// <summary>
+    /// The member lookup cache.
+    /// </summary>
+    public MemberCache Members {
+      get {
+        return _Members;
       }
-      if (text == "true") {
-        return true;
+    }
+
+    /// <summary>
+    /// Loads and parses a template (cached), or returns null when the source does not provide it.
+    /// </summary>
+    public TemplateDocument LoadDocument(string templateName) {
+      TemplateDocument document;
+      if (_CacheParsedTemplates && _Documents.TryGetValue(templateName, out document)) {
+        return document;
       }
-      if (text == "false") {
-        return false;
-      }
-      if (text == "null") {
+      string templateText;
+      if (!_Source.TryRead(templateName, out templateText)) {
         return null;
       }
-      if (text.StartsWith("\"", StringComparison.Ordinal) && text.EndsWith("\"", StringComparison.Ordinal)) {
-        return text.Substring(1, text.Length - 2);
+      document = TemplateParser.Parse(templateName, templateText);
+      if (_CacheParsedTemplates) {
+        document = _Documents.GetOrAdd(templateName, document);
       }
-      int number;
-      if (Int32.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out number)) {
-        return number;
-      }
-      string[] parts = text.Split('.');
-      object current = context.ResolveRoot(parts[0]);
-      for (int index = 1; index < parts.Length; index++) {
-        if (current == null) {
-          return null;
-        }
-        string part = parts[index];
-        int open = part.IndexOf('(');
-        if (open >= 0) {
-          if (!part.EndsWith(")", StringComparison.Ordinal)) {
-            throw new FormatException("Invalid method expression: " + part);
-          }
-          string methodName = part.Substring(0, open);
-          string arguments = part.Substring(open + 1, part.Length - open - 2);
-          object[] values;
-          if (arguments.Trim().Length == 0) {
-            values = new object[0];
-          } else {
-            string[] argumentParts = arguments.Split(',');
-            values = new object[argumentParts.Length];
-            for (int argumentIndex = 0; argumentIndex < argumentParts.Length; argumentIndex++) {
-              values[argumentIndex] = this.Evaluate(argumentParts[argumentIndex], context);
-            }
-          }
-          MethodInfo method = null;
-          foreach (MethodInfo candidate in current.GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public)) {
-            if (candidate.Name == methodName && candidate.GetParameters().Length == values.Length) {
-              method = candidate;
-              break;
-            }
-          }
-          if (method == null) {
-            throw new MissingMethodException(current.GetType().FullName, methodName);
-          }
-          current = method.Invoke(current, values);
-        } else {
-          PropertyInfo property = current.GetType().GetProperty(part, BindingFlags.Instance | BindingFlags.Public);
-          if (property == null || property.GetIndexParameters().Length != 0) {
-            throw new MissingMemberException(current.GetType().FullName, part);
-          }
-          current = property.GetValue(current, null);
-        }
-      }
-      return current;
+      return document;
     }
-    /// <summary>Formats a resolved value using .NET formatting conventions.</summary>
-    private string Format(object value, string format) {
-      if (value == null) {
-        return string.Empty;
-      }
-      IFormattable formattable = value as IFormattable;
-      if (formattable != null) {
-        return formattable.ToString(format, _Culture);
-      }
-      return value.ToString();
+
+    /// <summary>
+    /// Removes all cached parsed templates.
+    /// </summary>
+    public void ClearCache() {
+      _Documents.Clear();
     }
-    /// <summary>Evaluates a value for a conditional block.</summary>
-    private bool IsTrue(object value) {
+
+    /// <summary>
+    /// Template truthiness: null, false, numeric zero, empty strings and empty collections are false.
+    /// </summary>
+    public bool IsTrue(object value) {
       if (value == null) {
         return false;
       }
       if (value is bool) {
         return (bool)value;
       }
-      if (value is string) {
-        return !string.IsNullOrWhiteSpace((string)value);
+      string text = value as string;
+      if (text != null) {
+        return text.Length > 0;
       }
-      if (value is int) {
-        return (int)value != 0;
+      if (ValueOperations.IsNumeric(value)) {
+        return Convert.ToDouble(value, CultureInfo.InvariantCulture) != 0d;
+      }
+      ICollection collection = value as ICollection;
+      if (collection != null) {
+        return collection.Count > 0;
+      }
+      IEnumerable enumerable = value as IEnumerable;
+      if (enumerable != null) {
+        IEnumerator enumerator = enumerable.GetEnumerator();
+        try {
+          return enumerator.MoveNext();
+        } finally {
+          IDisposable disposable = enumerator as IDisposable;
+          if (disposable != null) {
+            disposable.Dispose();
+          }
+        }
       }
       return true;
     }
+
+    /// <summary>
+    /// Formats a value using an optional .NET format string and the culture.
+    /// Booleans are written as 'true' / 'false' unless a format is given.
+    /// </summary>
+    public string Format(object value, string format, CultureInfo culture) {
+      if (value == null) {
+        return string.Empty;
+      }
+      if (format != null) {
+        IFormattable formattable = value as IFormattable;
+        if (formattable != null) {
+          return formattable.ToString(format, culture);
+        }
+        return string.Format(culture, "{0:" + format + "}", value);
+      }
+      if (value is bool) {
+        if ((bool)value) {
+          return "true";
+        }
+        return "false";
+      }
+      IFormattable defaultFormattable = value as IFormattable;
+      if (defaultFormattable != null) {
+        return defaultFormattable.ToString(null, culture);
+      }
+      string result = value.ToString();
+      if (result == null) {
+        return string.Empty;
+      }
+      return result;
+    }
+
   }
+
 }
+

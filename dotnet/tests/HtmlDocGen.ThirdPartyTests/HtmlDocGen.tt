@@ -1,0 +1,147 @@
+﻿<#@ template debug="false" hostspecific="true" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Text.RegularExpressions" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension=".cs" #>
+<#
+
+// ===================== CONFIG =====================
+
+// Embeds the complete dependency-free HtmlDocGen template engine as internal source code,
+// for consumers that must not take a NuGet package or project reference (for example single-assembly tools).
+
+// Variant K (clone, 1 file):        ttVersionCheck = false, ttLocation = ""
+// Variant C (composition, n files): ttVersionCheck = true,  ttLocation = canonical .tt in origin repo (mandatory)
+
+string ttVersion = "2.0.0";   // bump on every change of file list or transform logic (origin copy is authoritative)
+bool ttVersionCheck = true;
+
+string projectUrl        = "https://github.com/KornSW/HtmlDocGen";
+string repositoryRootUrl = "https://raw.githubusercontent.com/KornSW/HtmlDocGen/refs/heads/V2/"; // branch (e.g. per major: 10.0), tag or SHA
+string sourceDirectory   = "dotnet/src/HtmlDocGen/";
+string ttLocation        = "dotnet/tests/HtmlDocGen.ThirdPartyTests/HtmlDocGen.tt";
+
+// Namespace strategy:
+//   CopyFor: originRootNamespace = real root of the library      -> <root>.CopyFor<hint>
+//   Absorb:  originRootNamespace = placeholder ("TemplateNamespace") -> <hint>
+string originRootNamespace = "HtmlDocGen";
+bool absorbIntoConsumerNamespace = false;
+
+// Optional: usings pointing to OTHER embedded snapshots (their namespace is CopyFor-rewritten as well).
+// Key = namespace as written in the origin source, value = namespace in the consumer project.
+var extraNamespaceRewrites = new Dictionary<string, string> {
+};
+
+string headerNote = "Complete copy of HtmlDocGen (all types internal). No reduced features.";
+
+string[] files = new string[] {
+  "TemplateSources.cs",
+  "TemplateContext.cs",
+  "MemberAccessPolicy.cs",
+  "TemplateExpressions.cs",
+  "TemplateParser.cs",
+  "TemplateEngine.cs",
+};
+
+
+// ==================================================
+
+string currentFileUrl = "";
+string content;
+
+try {
+
+  System.Net.ServicePointManager.SecurityProtocol |= System.Net.SecurityProtocolType.Tls12;
+
+  var body = new StringBuilder(10000);
+  var usings = new List<string>();
+
+  using (var wc = new System.Net.WebClient()) {
+
+    wc.Encoding = Encoding.UTF8; // default would be ANSI -> broken umlauts
+
+    if (ttVersionCheck) {
+      currentFileUrl = repositoryRootUrl + ttLocation;
+      string origin = wc.DownloadString(currentFileUrl);
+      var m = Regex.Match(origin, @"string\s+ttVersion\s*=\s*""([\d\.]+)""");
+      if (!m.Success) throw new Exception("Could not determine ttVersion at origin.");
+      if (new Version(ttVersion) < new Version(m.Groups[1].Value)) {
+        string msg = "This T4 template is outdated (" + ttVersion + " < " + m.Groups[1].Value + "). Download again from " + currentFileUrl + " or set ttVersionCheck = false.";
+        this.Error(msg);
+        return "#error " + msg;
+      }
+    }
+
+    foreach (string file in files) {
+
+      currentFileUrl = repositoryRootUrl + sourceDirectory + file;
+      string fileContent = wc.DownloadString(currentFileUrl).TrimStart('\uFEFF');
+
+      body.AppendLine();
+      body.AppendLine("// Taken from file: " + currentFileUrl);
+      body.AppendLine();
+
+      bool inIf = false, inElse = false, beforeNamespace = true;
+
+      using (var reader = new StringReader(fileContent)) {
+        for (string line = reader.ReadLine(); line != null; line = reader.ReadLine()) {
+          string t = line.TrimStart();
+          if (inIf && t.StartsWith("#else"))                    { inElse = true; }
+          else if (inIf && t.StartsWith("#endif"))              { inIf = false; inElse = false; }
+          else if (t.StartsWith("#if !UsedByT4"))               { inIf = true; }
+          else if (inIf && !inElse)                             { /* skip: not for embedding */ }
+          else if (t.StartsWith("[assembly:"))                  { /* skip */ }
+          else if (beforeNamespace && t.StartsWith("using "))   { usings.Add(t); }
+          else if (t.StartsWith("namespace "))                  { beforeNamespace = false; body.AppendLine(line); }
+          else if (beforeNamespace && string.IsNullOrWhiteSpace(line)) { /* skip */ }
+          else                                                  { body.AppendLine(line); }
+        }
+      }
+    }
+  }
+
+  // ---- unique namespace per embedding project (IL-Merge) ----
+
+  string hint = this.Host.ResolveParameterValue("directiveId", "namespaceDirectiveProcessor", "namespaceHint");
+  // If CustomToolNamespace is empty, VS passes the project's root namespace (plus folder path, if any).
+  if (string.IsNullOrWhiteSpace(hint)) throw new Exception("namespaceHint is empty (set CustomToolNamespace).");
+
+  string targetNamespace = absorbIntoConsumerNamespace ? hint : originRootNamespace + ".CopyFor" + hint;
+  string ns = Regex.Escape(originRootNamespace);
+
+  string text = string.Join("\r\n", usings.Distinct().OrderBy(u => u, StringComparer.Ordinal)) + "\r\n";
+  text += "\r\n// " + headerNote;
+  text += "\r\n// Generated by " + Path.GetFileName(this.Host.TemplateFile) + " v " + ttVersion + " - DO NOT EDIT. Re-run the custom tool instead.";
+  text += "\r\n// Sources downloaded from: " + projectUrl + "\r\n";
+  text += body.ToString();
+
+  text = Regex.Replace(text, @"(?m)^(\s*(?:using|namespace)\s+)" + ns + @"(?=[\s\.;{])", "${1}" + targetNamespace);
+
+  foreach (var r in extraNamespaceRewrites) {
+    text = Regex.Replace(text, @"(?m)^(\s*using\s+)" + Regex.Escape(r.Key) + @"(?=[\s\.;])", "${1}" + r.Value);
+  }
+
+  // ---- public -> internal (top-level and nested type declarations) ----
+
+  text = Regex.Replace(text,
+    @"(?m)^(?<i>[ \t]*)public(?<m>(?:[ \t]+(?:static|sealed|abstract|readonly|unsafe|ref|partial))*)[ \t]+(?<k>class|struct|interface|enum|record|delegate)\b",
+    "${i}internal${m} ${k}");
+
+  // ---- make class/struct/interface/record partial (not enum/delegate) ----
+
+  text = Regex.Replace(text,
+    @"(?m)^(?<p>[ \t]*(?:(?:internal|public|private|protected|static|sealed|abstract|readonly|unsafe|ref)[ \t]+)*)(?<k>class|struct|interface|record)\b",
+    "${p}partial ${k}");
+
+  content = text;
+
+} catch (Exception ex) {
+  string msg = "T4 embedding failed at '" + currentFileUrl + "': " + ex.Message.Replace("\r", " ").Replace("\n", " ");
+  this.Error(msg);
+  content = "#error " + msg;   // fail loud: build must break, never silently ship a broken snapshot
+}
+#><#= content #>

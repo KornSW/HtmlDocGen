@@ -2,16 +2,29 @@
 
 ## Overview
 
-A TemplateEngine resolves text via ITemplateSource and renders it against TemplateContext. TemplateContext holds explicitly named sources (underscore prefix) and local variables. Nested iterations inherit the current local scope. Includes create a child context with inherited sources but without locals. Values are formatted with CultureInfo and HTML encoded unless explicitly marked raw.
+TemplateEngine resolves template text via ITemplateSource, parses it once into a TemplateDocument (cached per engine) and renders the node tree against a TemplateContext. The context holds explicitly named sources (underscore prefix, optionally lazy) and local variables. Iteration scopes inherit the lexical locals; includes create an isolated scope that inherits sources and receives only explicit parameters and slot fills.
 
 ## Data flow
 
-Template name -> ITemplateSource.Read -> TemplateEngine.RenderText -> expression evaluation -> formatted HTML string.
+Template name -> ITemplateSource.TryRead -> TemplateParser (HTML-aware, raw text for script/style) -> node tree with parsed expressions -> TemplateRuntime render pass -> formatted, encoded HTML written to a TextWriter.
 
-## Extensibility
+## Components
 
-Implement ITemplateSource to retrieve templates from additional stores. Keep any HTTP or PDF integration in separate host adapters. The canonical code lives in dotnet/src/HtmlDocGen/TemplateEngine.cs; framework shells link the same source.
+| File | Responsibility |
+| --- | --- |
+| TemplateSources.cs | ITemplateSource, memory, file (root-protected), embedded and composite sources |
+| TemplateContext.cs | Public context, render scopes, TrustedHtml |
+| MemberAccessPolicy.cs | Trusted and restricted policies, TemplateCallableAttribute |
+| TemplateExpressions.cs | Lexer, expression parser, evaluator, overload resolver, member cache |
+| TemplateParser.cs | HTML parser, directives, node model, TemplateException diagnostics |
+| TemplateEngine.cs | Public API, options, runtime, formatting and truthiness |
+
+See [decision-v2-dependency-free-rewrite](decisions/decision-v2-dependency-free-rewrite.md).
+
+## Packaging and embedding
+
+The canonical code lives in the shared project dotnet/src/HtmlDocGen; the target shells HtmlDocGen.net8.0 and HtmlDocGen.net10.0 import it and build to dotnet/dist/Shared/<tfm>. For consumers without a package reference, dotnet/tests/HtmlDocGen.ThirdPartyTests/HtmlDocGen.tt is the canonical T4 composition template (variant C, version check enabled). Its checked-in snapshot is compiled and tested there without any library reference.
 
 ## Security considerations
 
-Only trusted templates may be rendered. Public method calls may have side effects. A future access policy must explicitly restrict invocations; names such as Delete or Update are not sufficient security boundaries. Escaping is HTML-text-oriented, not context-aware for JavaScript, CSS or URLs.
+Only trusted templates may be rendered with the default trusted policy, because public methods may have side effects. RestrictedMemberAccessPolicy allows only methods marked with TemplateCallableAttribute or registered explicitly; reflection-sensitive members are always denied. Escaping is HTML-oriented, not context-aware for JavaScript, CSS or URLs.

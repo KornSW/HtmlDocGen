@@ -245,3 +245,6 @@ ModelManifest.xml
 .fake/
 /(Vendor)/NuGet
 /(Stage)
+
+# Build output (see smart-solution-and-project-structure, Build Output Layout)
+/dotnet/dist/

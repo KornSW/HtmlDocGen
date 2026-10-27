@@ -48,15 +48,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="HtmlDocGen.tt">
+    <None Update="MicroTemplateEngine.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>HtmlDocGen.cs</LastGenOutput>
+      <LastGenOutput>MicroTemplateEngine.cs</LastGenOutput>
       <CustomToolNamespace>HtmlDocGen</CustomToolNamespace>
     </None>
-    <Compile Update="HtmlDocGen.cs">
+    <Compile Update="MicroTemplateEngine.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>HtmlDocGen.tt</DependentUpon>
+      <DependentUpon>MicroTemplateEngine.tt</DependentUpon>
     </Compile>
   </ItemGroup>
 

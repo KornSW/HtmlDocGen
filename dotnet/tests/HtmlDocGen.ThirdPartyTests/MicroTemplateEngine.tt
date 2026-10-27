@@ -23,7 +23,7 @@ bool ttVersionCheck = true;
 string projectUrl        = "https://github.com/KornSW/HtmlDocGen";
 string repositoryRootUrl = "https://raw.githubusercontent.com/KornSW/HtmlDocGen/refs/heads/V2/"; // branch (e.g. per major: 10.0), tag or SHA
 string sourceDirectory   = "dotnet/src/HtmlDocGen/";
-string ttLocation        = "dotnet/tests/HtmlDocGen.ThirdPartyTests/HtmlDocGen.tt";
+string ttLocation        = "dotnet/tests/HtmlDocGen.ThirdPartyTests/MicroTemplateEngine.tt";
 
 // Namespace strategy:
 //   CopyFor: originRootNamespace = real root of the library      -> <root>.CopyFor<hint>
